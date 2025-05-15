@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ['20', 'lts/*', 'current']
+        node: ['20', '22', '24']
         os: [ubuntu-latest, macos-latest]
 
     steps:
