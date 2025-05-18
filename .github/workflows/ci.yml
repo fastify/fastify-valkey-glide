@@ -98,6 +98,7 @@ jobs:
 
       - name: Run tests
         run: npm test
+
   automerge:
     name: Automerge Dependabot PRs
     if: >
