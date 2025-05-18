@@ -116,7 +116,7 @@ fastify.register(fastifyValkey, { client })
 Note: by default, *@fastify/valkey-glide* will **not** automatically close the client
 connection when the Fastify server shuts down.
 
-To automatically close the client connection, set clientClose to true.
+To automatically close the client connection, set closeClient to true.
 
 ```js
 fastify.register(fastifyValkey, { 
