@@ -54,19 +54,21 @@ jobs:
       - name: Lint code
         run: npm run lint
   test:
-    name: OS ${{ matrix.os }} Node.js ${{ matrix.node }}
+    name: Test
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       matrix:
-        node: ['20', '22', '24']
+        node-version: [20, 22, 24]
         os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Setup Valkey (Linux)
         if: contains(runner.os, 'Linux')
         run: |
-          sudo apt update
-          sudo apt install valkey
+          sudo apt-get -q update
+          sudo apt-get -y --no-install-recommends install valkey
           sudo systemctl start valkey-server
 
       - name: Setup Valkey (macOS)
@@ -75,19 +77,16 @@ jobs:
           brew install valkey
           brew services start valkey
 
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - name: Check out repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
 
-      - name: Set up Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: ${{ matrix.node }}
           check-latest: true
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install --ignore-scripts
-
-      - name: Run tests
-        run: npm test
+        run: npm i --ignore-scripts
