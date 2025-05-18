@@ -53,6 +53,7 @@ jobs:
 
       - name: Lint code
         run: npm run lint
+
   test:
     name: Test
     runs-on: ${{ matrix.os }}
