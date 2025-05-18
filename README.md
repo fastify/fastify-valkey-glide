@@ -18,7 +18,7 @@ Add it to your project with `register` and you are done!
 
 ### Create a new Valkey Client
 
-The ``options`` that you pass to `register` will be passed to the Valkey client.
+The `options` that you pass to `register` will be passed to the Valkey client.
 
 ```js
 import Fastify from 'fastify'
