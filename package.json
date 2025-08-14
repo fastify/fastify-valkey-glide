@@ -33,6 +33,20 @@
     "url": "git+https://github.com/fastify/fastify-valkey-glide.git"
   },
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fastify/fastify-valkey-glide/issues"
+  },
+  "homepage": "https://github.com/fastify/fastify-valkey-glide#readme",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/fastify"
+    },
+    {
+      "type": "opencollective",
+      "url": "https://opencollective.com/fastify"
+    }
+  ],
   "devDependencies": {
     "@fastify/pre-commit": "^2.1.0",
     "@types/node": "^24.0.8",
