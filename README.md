@@ -119,9 +119,10 @@ connection when the Fastify server shuts down.
 To automatically close the client connection, set closeClient to true.
 
 ```js
-fastify.register(fastifyValkey, { 
-    client, 
-    closeClient: true })
+fastify.register(fastifyValkey, {
+  client,
+  closeClient: true
+})
 ```
 
 ## Registering multiple Valkey client instances
