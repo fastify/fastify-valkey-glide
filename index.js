@@ -20,7 +20,7 @@ async function fastifyValkey (fastify, options) {
       namespaceContainer[NAMESPACE_CONTAINER_MARKER] = true
       fastify.decorate('valkey', namespaceContainer)
     } else if (!fastify.valkey[NAMESPACE_CONTAINER_MARKER]) {
-      throw new Error('@fastify/valkey has already been registered')
+      throw new Error('@fastify/valkey-glide has already been registered')
     }
     if (fastify.valkey[namespace]) {
       throw new Error(`Valkey '${namespace}' instance namespace has already been registered`)
@@ -33,7 +33,7 @@ async function fastifyValkey (fastify, options) {
     fastify.valkey[namespace] = client
   } else {
     if (fastify.valkey) {
-      throw new Error('@fastify/valkey has already been registered')
+      throw new Error('@fastify/valkey-glide has already been registered')
     }
 
     const close = (fastify) => { fastify.valkey.close() }

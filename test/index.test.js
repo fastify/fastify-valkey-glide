@@ -240,7 +240,7 @@ test('Should throw when trying to register multiple instances without giving a n
       addresses: [{ host: '127.0.0.1', port: 6379 }],
     })
 
-  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey has already been registered'))
+  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey-glide has already been registered'))
 })
 
 test('Should throw when namespace is an empty string', async (t) => {
@@ -275,7 +275,7 @@ test('Should throw when trying to register a namespaced instance after a default
       namespace: 'mixed_mode'
     })
 
-  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey has already been registered'))
+  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey-glide has already been registered'))
 })
 
 test('Should throw when trying to register a default instance after a namespaced instance in the same context', async (t) => {
@@ -293,7 +293,7 @@ test('Should throw when trying to register a default instance after a namespaced
       addresses: [{ host: '127.0.0.1', port: 6379 }]
     })
 
-  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey has already been registered'))
+  await t.assert.rejects(fastify.ready(), new Error('@fastify/valkey-glide has already been registered'))
 })
 
 test('Should not throw within different contexts with same namespace', async (t) => {
@@ -385,7 +385,7 @@ test('Should throw when clientMode is invalid', async (t) => {
   await t.assert.rejects(fastify.ready(), new Error("Invalid clientMode. Expected 'standalone' or 'cluster'"))
 })
 
-test('Should be able to register multiple namespaced @fastify/valkey instances', async t => {
+test('Should be able to register multiple namespaced @fastify/valkey-glide instances', async t => {
   t.plan(3)
 
   const fastify = Fastify()
@@ -407,7 +407,7 @@ test('Should be able to register multiple namespaced @fastify/valkey instances',
   t.assert.ok(fastify.valkey.multiple_namespace2)
 })
 
-test('Should throw when @fastify/valkey is initialized with an option that makes valkey throw', async (t) => {
+test('Should throw when @fastify/valkey-glide is initialized with an option that makes valkey throw', async (t) => {
   t.plan(1)
 
   const fastify = Fastify()
@@ -418,7 +418,7 @@ test('Should throw when @fastify/valkey is initialized with an option that makes
   await t.assert.rejects(fastify.ready())
 })
 
-test('Should throw when @fastify/valkey is initialized with a namespace and an option that makes valkey throw', async (t) => {
+test('Should throw when @fastify/valkey-glide is initialized with a namespace and an option that makes valkey throw', async (t) => {
   t.plan(1)
 
   const fastify = Fastify()
