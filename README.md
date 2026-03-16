@@ -18,9 +18,10 @@ Add it to your project with `register` and you are done!
 
 ### Upgrade notes
 
-- Mixed mode registrations in the same Fastify context are rejected. You cannot register one default instance and one namespaced instance side-by-side in the same context.
+- Mixed mode registrations are rejected within the same Fastify instance tree. You cannot mix one default instance and namespaced instances under the same root Fastify instance.
 - `clientMode` is validated. Only `'standalone'` and `'cluster'` are accepted.
 - If `namespace` is provided, it must be a non-empty string.
+- TypeScript: `fastify.valkey` is typed as a union (`ValkeyClient | FastifyValkeyNamespacedInstance`). Depending on your usage, you may need to narrow or cast before calling root client methods (for example, `.get`) or namespace properties.
 
 ### Create a new Valkey Client
 

@@ -1,7 +1,9 @@
-import Fastify, { FastifyInstance } from 'fastify'
+import Fastify from 'fastify'
+import type { FastifyInstance } from 'fastify'
 import { GlideClient, GlideClusterClient } from '@valkey/valkey-glide'
-import { expectAssignable, expectError, expectType } from 'tsd'
-import fastifyValkey, { FastifyValkey, FastifyValkeyPluginOptions, FastifyValkeyNamespacedInstance, } from '..'
+import { expectAssignable, expectType } from 'tsd'
+import fastifyValkey from '..'
+import type { FastifyValkey, FastifyValkeyPluginOptions, FastifyValkeyNamespacedInstance, } from '..'
 
 const app:FastifyInstance = Fastify()
 const valkey: GlideClient = await GlideClient.createClient({ addresses: [{ host: '127.0.0.1', port: 6379 }] })
@@ -34,17 +36,28 @@ expectAssignable<FastifyValkeyPluginOptions>({
   addresses: [{ host: '127.0.0.1', port: 6379 }],
 })
 
-expectError(app.register(fastifyValkey, {
+const invalidOptions: FastifyValkeyPluginOptions = {
   namespace: 'three',
+  // @ts-expect-error unknownOption is not part of the plugin options
   unknownOption: 'this should trigger a typescript error'
-}))
+}
+
+expectType<FastifyValkeyPluginOptions>(invalidOptions)
 
 // Plugin property available
 app.after(() => {
-  expectAssignable<GlideClient | GlideClusterClient>(app.valkey)
   expectType<FastifyValkey>(app.valkey)
 
-  expectAssignable<FastifyValkeyNamespacedInstance>(app.valkey)
-  expectType<GlideClient | GlideClusterClient>(app.valkey.one)
-  expectType<GlideClient | GlideClusterClient>(app.valkey.two)
+  expectAssignable<FastifyValkeyNamespacedInstance | GlideClient | GlideClusterClient>(app.valkey)
+
+  // @ts-expect-error root valkey access requires narrowing before namespace lookup
+  const rootNamespaceLookup = app.valkey.one
+  // @ts-expect-error root valkey access requires narrowing before client method calls
+  app.valkey.get('key')
+
+  rootNamespaceLookup satisfies unknown
+
+  const namespacedValkey = app.valkey as FastifyValkeyNamespacedInstance
+  expectType<GlideClient | GlideClusterClient>(namespacedValkey.one)
+  expectType<GlideClient | GlideClusterClient>(namespacedValkey.two)
 })

@@ -17,7 +17,7 @@ declare namespace fastifyValkey {
     [namespace: string]: ValkeyClient;
   }
 
-  export type FastifyValkey = FastifyValkeyNamespacedInstance & ValkeyClient
+  export type FastifyValkey = ValkeyClient | FastifyValkeyNamespacedInstance
 
   export type FastifyValkeyPluginOptions =
     {
