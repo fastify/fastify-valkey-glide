@@ -1,6 +1,6 @@
 {
   "name": "@fastify/valkey-glide",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Plugin to share a common valkey connection across Fastify.",
   "main": "index.js",
   "type": "commonjs",
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "fastify-plugin": "^5.0.0",
-    "@valkey/valkey-glide": "^2.0.1"
+    "@valkey/valkey-glide": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
