@@ -1,5 +1,5 @@
 import { FastifyPluginCallback } from 'fastify'
-import { GlideClient, GlideClusterClient, GlideClientConfiguration, } from '@valkey/valkey-glide'
+import type { GlideClient, GlideClusterClient, GlideClientConfiguration, GlideClusterClientConfiguration, } from '@valkey/valkey-glide'
 
 type FastifyValkeyPluginType = FastifyPluginCallback<fastifyValkey.FastifyValkeyPluginOptions>
 
@@ -29,7 +29,11 @@ declare namespace fastifyValkey {
       closeClient?: boolean;
     } | ({
       namespace?: string;
-    } & GlideClientConfiguration)
+      clientMode?: 'standalone';
+    } & GlideClientConfiguration) | ({
+      namespace?: string;
+      clientMode: 'cluster';
+    } & GlideClusterClientConfiguration)
   export const fastifyValkey: FastifyValkeyPluginType
   export { fastifyValkey as default }
 }

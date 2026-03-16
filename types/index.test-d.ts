@@ -20,8 +20,18 @@ app.register(fastifyValkey, {
   addresses: [{ host: '127.0.0.1', port: 6379 }]
 })
 
+app.register(fastifyValkey, {
+  clientMode: 'cluster',
+  addresses: [{ host: '127.0.0.1', port: 6379 }]
+})
+
 expectAssignable<FastifyValkeyPluginOptions>({
   client: valkeyCluster,
+})
+
+expectAssignable<FastifyValkeyPluginOptions>({
+  clientMode: 'cluster',
+  addresses: [{ host: '127.0.0.1', port: 6379 }],
 })
 
 expectError(app.register(fastifyValkey, {
