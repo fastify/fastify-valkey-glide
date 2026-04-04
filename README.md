@@ -1,11 +1,16 @@
 # @fastify/valkey-glide
 
+[![CI](https://github.com/fastify/fastify-valkey-glide/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fastify/fastify-valkey-glide/blob/main/.github/workflows/ci.yml)
+[![NPM version](https://img.shields.io/npm/v/@fastify/valkey-glide.svg?style=flat)](https://www.npmjs.com/package/@fastify/valkey-glide)
+[![neostandard javascript style](https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat)](https://github.com/neostandard/neostandard)
+
 Fastify Valkey connection plugin, with this you can share the same Valkey connection in every part of your server.
 
 Using [`@valkey/valkey-glide`](https://github.com/valkey-io/valkey-glide) client under the hood.
 Valkey Glide is an open-source Valkey client library. it is one of the official client libraries for Valkey, and it supports all Valkey commands.
 
 ### Compatibility
+
 | Plugin version | Fastify version |
 | ---------------|-----------------|
 |      `0.x`     |      `^5.x`     |
