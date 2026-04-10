@@ -1,16 +1,26 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-const { GlideClient } = require('@valkey/valkey-glide')
+const { GlideClient, GlideClusterClient } = require('@valkey/valkey-glide')
+
+const NAMESPACE_CONTAINER_MARKER = Symbol('fastify.valkey.namespace.container')
 
 async function fastifyValkey (fastify, options) {
   const { namespace, closeClient = false, ...valkeyOptions } = options
+
+  if (namespace === '') {
+    throw new Error('Invalid namespace. Expected a non-empty string when namespace is provided')
+  }
 
   let client = options.client || null
 
   if (namespace) {
     if (!fastify.valkey) {
-      fastify.decorate('valkey', Object.create(null))
+      const namespaceContainer = Object.create(null)
+      namespaceContainer[NAMESPACE_CONTAINER_MARKER] = true
+      fastify.decorate('valkey', namespaceContainer)
+    } else if (!fastify.valkey[NAMESPACE_CONTAINER_MARKER]) {
+      throw new Error('@fastify/valkey-glide has already been registered')
     }
     if (fastify.valkey[namespace]) {
       throw new Error(`Valkey '${namespace}' instance namespace has already been registered`)
@@ -23,7 +33,7 @@ async function fastifyValkey (fastify, options) {
     fastify.valkey[namespace] = client
   } else {
     if (fastify.valkey) {
-      throw new Error('@fastify/valkey has already been registered')
+      throw new Error('@fastify/valkey-glide has already been registered')
     }
 
     const close = (fastify) => { fastify.valkey.close() }
@@ -40,7 +50,16 @@ async function setupClient (fastify, client, closeClient, valkeyOptions, closeIn
       fastify.addHook('onClose', closeInstance)
     }
   } else {
-    client = await GlideClient.createClient(valkeyOptions)
+    const { clientMode = 'standalone', ...options } = valkeyOptions
+    if (clientMode !== 'standalone' && clientMode !== 'cluster') {
+      throw new Error("Invalid clientMode. Expected 'standalone' or 'cluster'")
+    }
+
+    if (clientMode === 'cluster') {
+      client = await GlideClusterClient.createClient(options)
+    } else {
+      client = await GlideClient.createClient(options)
+    }
 
     fastify.addHook('onClose', closeInstance)
   }

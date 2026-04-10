@@ -21,6 +21,13 @@ For Valkey and Redis DB compatibility look [here](https://github.com/valkey-io/v
 
 Add it to your project with `register` and you are done!
 
+### Upgrade notes
+
+- Mixed mode registrations are rejected within the same Fastify instance tree. You cannot mix one default instance and namespaced instances under the same root Fastify instance.
+- `clientMode` is validated. Only `'standalone'` and `'cluster'` are accepted.
+- If `namespace` is provided, it must be a non-empty string.
+- TypeScript: `fastify.valkey` is typed as a union (`ValkeyClient | FastifyValkeyNamespacedInstance`). Depending on your usage, you may need to narrow or cast before calling root client methods (for example, `.get`) or namespace properties.
+
 ### Create a new Valkey Client
 
 The `options` that you pass to `register` will be passed to the Valkey client.
@@ -42,13 +49,20 @@ fastify.register(fastifyValkey, {
   credentials: {username: "user1", password: "password"},
   useTLS: true
 })
+
+// OR create a managed cluster client
+fastify.register(fastifyValkey, {
+  clientMode: 'cluster',
+  addresses: [{ host: '127.0.0.1', port: 6379 }],
+  periodicChecks: 'enabledDefaultConfigs'
+})
 ```
 
 ### Accessing the Valkey Client
 
 Once you have registered your plugin, you can access the Valkey client via `fastify.valkey`.
 
-The client is automatically closed when the fastify instance is closed.
+Clients created by this plugin are automatically closed when the fastify instance is closed.
 
 ```js
 import Fastify from 'fastify'
@@ -60,16 +74,14 @@ fastify.register(fastifyValkey, {
   addresses: [{ host: '127.0.0.1', port: 6379 }],
 })
 
-fastify.post('/foo', (request, reply) => {
-  fastify.valkey.set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
+fastify.post('/foo', async (request, reply) => {
+  await fastify.valkey.set(request.body.key, request.body.value)
+  reply.send({ status: 'ok' })
 })
 
-fastify.get('/foo', (request, reply) => {
-  fastify.valkey.get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
+fastify.get('/foo', async (request, reply) => {
+  const val = await fastify.valkey.get(request.query.key)
+  reply.send(val)
 })
 
 try {
@@ -158,29 +170,25 @@ fastify
   })
 
 // Here we will use the `hello` named instance
-fastify.post('/hello', (request, reply) => {
-  fastify.valkey['hello'].set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
+fastify.post('/hello', async (request, reply) => {
+  await fastify.valkey['hello'].set(request.body.key, request.body.value)
+  reply.send({ status: 'ok' })
 })
 
-fastify.get('/hello', (request, reply) => {
-  fastify.valkey.hello.get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
+fastify.get('/hello', async (request, reply) => {
+  const val = await fastify.valkey.hello.get(request.query.key)
+  reply.send(val)
 })
 
 // Here we will use the `world` named instance
-fastify.post('/world', (request, reply) => {
-  fastify.valkey.world.set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
+fastify.post('/world', async (request, reply) => {
+  await fastify.valkey.world.set(request.body.key, request.body.value)
+  reply.send({ status: 'ok' })
 })
 
-fastify.get('/world', (request, reply) => {
-  fastify.valkey['world'].get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
+fastify.get('/world', async (request, reply) => {
+  const val = await fastify.valkey['world'].get(request.query.key)
+  reply.send(val)
 })
 
 try {
@@ -189,6 +197,59 @@ try {
   fastify.log.error(err)
   process.exit(1)
 }
+```
+
+### Comprehensive standalone configuration example
+
+```js
+import Fastify from 'fastify'
+import fastifyValkey from '@fastify/valkey-glide'
+import {
+  Decoder,
+  GlideClientConfiguration,
+  ProtocolVersion
+} from '@valkey/valkey-glide'
+
+const fastify = Fastify()
+
+fastify.register(fastifyValkey, {
+  addresses: [
+    { host: '127.0.0.1', port: 6379 },
+    { host: '127.0.0.2', port: 6379 }
+  ],
+  databaseId: 1,
+  useTLS: true,
+  credentials: { username: 'user1', password: 'password' },
+  requestTimeout: 5000,
+  protocol: ProtocolVersion.RESP3,
+  clientName: 'fastify-valkey-main',
+  readFrom: 'preferReplica',
+  clientAz: 'us-east-1a',
+  defaultDecoder: Decoder.String,
+  inflightRequestsLimit: 1000,
+  lazyConnect: false,
+  connectionBackoff: {
+    numberOfRetries: 5,
+    factor: 500,
+    exponentBase: 2,
+    jitterPercent: 20
+  },
+  advancedConfiguration: {
+    connectionTimeout: 1000,
+    tlsAdvancedConfiguration: {
+      insecure: false
+    }
+  },
+  pubsubSubscriptions: {
+    channelsAndPatterns: {
+      [GlideClientConfiguration.PubSubChannelModes.Exact]: new Set(['updates'])
+    },
+    callback: (message, context) => {
+      console.log('pubsub message', message, context)
+    },
+    context: { source: 'fastify' }
+  }
+})
 ```
 
 ## License

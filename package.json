@@ -1,6 +1,6 @@
 {
   "name": "@fastify/valkey-glide",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Plugin to share a common valkey connection across Fastify.",
   "main": "index.js",
   "type": "commonjs",
@@ -8,8 +8,8 @@
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "redis": "docker run -p 6379:6379 --rm redis:7.2",
-    "valkey": "docker run -p 6379:6379 --rm valkey/valkey:latest",
+    "redis": "docker run -p 6379:6379 --name valkey-glide-redis -d --rm redis:latest",
+    "valkey": "docker run -p 6380:6379 --name valkey-glide-valkey -d --rm valkey/valkey:latest",
     "test": "npm run unit && npm run typescript",
     "typescript": "tsd",
     "unit": "c8 --100 node --test"
@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "fastify-plugin": "^5.0.0",
-    "@valkey/valkey-glide": "^2.0.1"
+    "@valkey/valkey-glide": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"
