@@ -19,14 +19,14 @@ app.register(fastifyValkey, {
   addresses: [{ host: '127.0.0.1', port: 6379 }]
 })
 
-expect({
-  client: valkeyCluster,
-}).type.toBeAssignableTo<FastifyValkeyPluginOptions>()
+expect<FastifyValkeyPluginOptions>().type.toBeAssignableFrom({
+  client: valkeyCluster
+})
 
-expect({
+expect<FastifyValkeyPluginOptions>().type.not.toBeAssignableFrom({
   namespace: 'three',
   unknownOption: 'this should trigger a typescript error'
-}).type.not.toBeAssignableTo<FastifyValkeyPluginOptions>()
+})
 
 // Plugin property available
 app.after(() => {
