@@ -312,18 +312,15 @@ test('Should be able to register multiple namespaced @fastify/valkey instances',
   t.assert.ok(fastify.valkey.multiple_namespace2)
 })
 
-test('Should throw when @fastify/valkey is initialized with an option that makes valkey throw', { skip: process.platform === 'darwin' }, (t, done) => {
+test('Should throw when @fastify/valkey is initialized with an option that makes valkey throw', { skip: process.platform === 'darwin' }, async (t) => {
   t.plan(1)
 
-  const fastify = Fastify({ pluginTimeout: 20000 })
+  const fastify = Fastify()
   t.after(() => fastify.close())
 
   fastify.register(fastifyValkey, { addresses: [] })
 
-  fastify.ready((err) => {
-    t.assert.ok(err)
-    done()
-  })
+  await t.assert.rejects(fastify.ready())
 })
 
 test('Should throw when @fastify/valkey is initialized with a namespace and an option that makes valkey throw', { skip: process.platform === 'darwin' }, async (t) => {
