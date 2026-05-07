@@ -11,7 +11,7 @@
     "redis": "docker run -p 6379:6379 --rm redis:7.2",
     "valkey": "docker run -p 6379:6379 --rm valkey/valkey:latest",
     "test": "npm run unit && npm run typescript",
-    "typescript": "tsd",
+    "typescript": "tstyche",
     "unit": "c8 --100 node --test"
   },
   "keywords": [
@@ -53,7 +53,7 @@
     "eslint": "^9.17.0",
     "fastify": "^5.0.0",
     "neostandard": "^0.12.0",
-    "tsd": "^0.33.0",
+    "tstyche": "^7.0.0",
     "why-is-node-running": "^3.2.2"
   },
   "dependencies": {
