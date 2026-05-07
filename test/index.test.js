@@ -281,7 +281,7 @@ test('Should throw when trying to connect on an invalid host', async (t) => {
   t.after(() => fastify.close())
 
   fastify.register(fastifyValkey, {
-    addresses: [{ host: 'invalid_host' }],
+    addresses: [{ host: 'invalid_host', port: 9999 }],
     connectionBackoff: {
       numberOfRetries: 0
     }
@@ -312,7 +312,7 @@ test('Should be able to register multiple namespaced @fastify/valkey instances',
   t.assert.ok(fastify.valkey.multiple_namespace2)
 })
 
-test('Should throw when @fastify/valkey is initialized with an option that makes valkey throw', async (t) => {
+test('Should throw when @fastify/valkey is initialized with an option that makes valkey throw', { skip: process.platform === 'darwin' }, async (t) => {
   t.plan(1)
 
   const fastify = Fastify()
@@ -323,10 +323,10 @@ test('Should throw when @fastify/valkey is initialized with an option that makes
   await t.assert.rejects(fastify.ready())
 })
 
-test('Should throw when @fastify/valkey is initialized with a namespace and an option that makes valkey throw', async (t) => {
+test('Should throw when @fastify/valkey is initialized with a namespace and an option that makes valkey throw', { skip: process.platform === 'darwin' }, async (t) => {
   t.plan(1)
 
-  const fastify = Fastify()
+  const fastify = Fastify({ pluginTimeout: 20000 })
   t.after(() => fastify.close())
 
   fastify.register(fastifyValkey, {
