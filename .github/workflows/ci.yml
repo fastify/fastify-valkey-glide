@@ -27,7 +27,6 @@ jobs:
     uses: fastify/workflows/.github/workflows/nested-quality.yml@v6
     permissions:
       contents: read
-    secrets: inherit
     with:
       license-check: true
       lint: true
@@ -61,7 +60,7 @@ jobs:
           brew services start valkey
 
       - name: Check out repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
