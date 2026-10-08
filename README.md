@@ -4,26 +4,33 @@
 [![NPM version](https://img.shields.io/npm/v/@fastify/valkey-glide.svg?style=flat)](https://www.npmjs.com/package/@fastify/valkey-glide)
 [![neostandard javascript style](https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat)](https://github.com/neostandard/neostandard)
 
-Fastify Valkey connection plugin, with this you can share the same Valkey connection in every part of your server.
+Fastify plugin for sharing a
+[`@valkey/valkey-glide`](https://github.com/valkey-io/valkey-glide) client across
+your application.
 
-Using [`@valkey/valkey-glide`](https://github.com/valkey-io/valkey-glide) client under the hood.
-Valkey Glide is an open-source Valkey client library. it is one of the official client libraries for Valkey, and it supports all Valkey commands.
+## Install
+
+```sh
+npm i @fastify/valkey-glide
+```
 
 ### Compatibility
 
 | Plugin version | Fastify version |
-| ---------------|-----------------|
-|      `0.x`     |      `^5.x`     |
+| -------------- | --------------- |
+| `0.x`          | `^5.x`          |
 
-For Valkey and Redis DB compatibility look [here](https://github.com/valkey-io/valkey-glide?tab=readme-ov-file#supported-engine-versions)
+[Valkey GLIDE's supported engine versions](https://github.com/valkey-io/valkey-glide?tab=readme-ov-file#supported-engine-versions)
+determine Valkey and Redis compatibility.
 
 ## Usage
 
-Add it to your project with `register` and you are done!
+The plugin decorates Fastify with `fastify.valkey`.
 
-### Create a new Valkey Client
+### Plugin-managed client
 
-The `options` that you pass to `register` will be passed to the Valkey client.
+When `client` is omitted, the plugin creates and owns a standalone client by
+default:
 
 ```js
 import Fastify from 'fastify'
@@ -31,97 +38,47 @@ import fastifyValkey from '@fastify/valkey-glide'
 
 const fastify = Fastify()
 
-// create by specifying address
 fastify.register(fastifyValkey, {
-  addresses: [{ host: '127.0.0.1' }]
+  addresses: [{ host: '127.0.0.1', port: 6379 }]
 })
 
-// OR with more options
+fastify.get('/value/:key', async (request) => {
+  return fastify.valkey.get(request.params.key)
+})
+
+await fastify.listen({ port: 3000 })
+```
+
+For a cluster, use this registration instead. Cluster mode is not inferred from
+GLIDE options.
+
+```js
 fastify.register(fastifyValkey, {
-  addresses: [{ host: '127.0.0.1', port: 6379 }],
-  credentials: {username: "user1", password: "password"},
-  useTLS: true
+  clientMode: 'cluster',
+  addresses: [{ host: '127.0.0.1', port: 7000 }]
 })
 ```
 
-### Accessing the Valkey Client
+Other GLIDE configuration options are passed to the selected `createClient`
+method. Plugin-managed clients are closed when Fastify closes.
 
-Once you have registered your plugin, you can access the Valkey client via `fastify.valkey`.
+### Supplied client
 
-The client is automatically closed when the fastify instance is closed.
-
-```js
-import Fastify from 'fastify'
-import fastifyValkey from '@fastify/valkey-glide'
-
-const fastify = Fastify({ logger: true })
-
-fastify.register(fastifyValkey, {
-  addresses: [{ host: '127.0.0.1', port: 6379 }],
-})
-
-fastify.post('/foo', (request, reply) => {
-  fastify.valkey.set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
-})
-
-fastify.get('/foo', (request, reply) => {
-  fastify.valkey.get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
-})
-
-try {
-  await fastify.listen({ port: 3000 })
-  console.log(`server listening on ${fastify.server.address().port}`)
-} catch (err) {
-  fastify.log.error(err)
-  process.exit(1)
-}
-```
-
-### Using an existing Valkey client
-
-You may also supply an existing *Valkey* client instance by passing an options
-object with the `client` property set to the instance. In this case,
-the client is not automatically closed when the Fastify instance is
-closed.
+Pass an existing `GlideClient` or `GlideClusterClient` with `client`. Do not
+combine `client` with `clientMode` or GLIDE client creation options.
 
 ```js
-import Fastify from 'fastify'
-import fastifyValkey from '@fastify/valkey-glide'
 import { GlideClient } from '@valkey/valkey-glide'
 
-const fastify = Fastify()
-
 const client = await GlideClient.createClient({
-  addresses: [{ host: 'localhost', port: 6379 }]
-})
-
-fastify.register(fastifyValkey, { client })
-```
-
-You can also supply a *Valkey Cluster* instance to the client:
-
-```js
-import Fastify from 'fastify'
-import fastifyValkey from '@fastify/valkey-glide'
-import { GlideClusterClient } from '@valkey/valkey-glide'
-
-const fastify = Fastify()
-
-const client = await GlideClusterClient.createClient({
   addresses: [{ host: '127.0.0.1', port: 6379 }]
 })
 
 fastify.register(fastifyValkey, { client })
 ```
 
-Note: by default, *@fastify/valkey-glide* will **not** automatically close the client
-connection when the Fastify server shuts down.
-
-To automatically close the client connection, set closeClient to true.
+A supplied client remains caller-owned and is not closed by default. Set
+`closeClient` to `true` to close it when Fastify closes:
 
 ```js
 fastify.register(fastifyValkey, {
@@ -132,64 +89,35 @@ fastify.register(fastifyValkey, {
 
 ## Registering multiple Valkey client instances
 
-By using the `namespace` option you can register multiple Valkey client instances.
+To register multiple clients in one Fastify context, give every registration a
+unique, non-empty `namespace`. `fastify.valkey` is then a map of clients instead
+of a client. Do not mix namespaced and unnamed registrations in the same context.
 
 ```js
 import Fastify from 'fastify'
 import fastifyValkey from '@fastify/valkey-glide'
-import { GlideClient } from '@valkey/valkey-glide'
 
 const fastify = Fastify()
 
-const valkey = await GlideClient.createClient({
-  addresses: [{ host: 'localhost', port: 6379 }]
-})
-
 fastify
   .register(fastifyValkey, {
-    addresses: [{ host: '127.0.0.1', port: 6380 }],
-    namespace: 'hello'
+    namespace: 'cache',
+    addresses: [{ host: '127.0.0.1', port: 6379 }]
   })
-
-fastify
   .register(fastifyValkey, {
-    client: valkey,
-    namespace: 'world'
+    namespace: 'sessions',
+    clientMode: 'cluster',
+    addresses: [{ host: '127.0.0.1', port: 7000 }]
   })
 
-// Here we will use the `hello` named instance
-fastify.post('/hello', (request, reply) => {
-  fastify.valkey['hello'].set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
+fastify.get('/cache/:key', async (request) => {
+  return fastify.valkey.cache.get(request.params.key)
 })
-
-fastify.get('/hello', (request, reply) => {
-  fastify.valkey.hello.get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
-})
-
-// Here we will use the `world` named instance
-fastify.post('/world', (request, reply) => {
-  fastify.valkey.world.set(request.body.key, request.body.value, (err) => {
-    reply.send(err || { status: 'ok' })
-  })
-})
-
-fastify.get('/world', (request, reply) => {
-  fastify.valkey['world'].get(request.query.key, (err, val) => {
-    reply.send(err || val)
-  })
-})
-
-try {
-  await fastify.listen({ port: 3000 })
-} catch (err) {
-  fastify.log.error(err)
-  process.exit(1)
-}
 ```
+
+[Fastify encapsulation](https://fastify.dev/docs/latest/Reference/Encapsulation/)
+applies to child contexts. A child may inherit or shadow parent namespaces, or
+choose a different shape, without changing its parent or sibling contexts.
 
 ## License
 
