@@ -23,10 +23,6 @@
     "speed",
     "cache"
   ],
-  "files": [
-    "index.js",
-    "types/index.d.ts"
-  ],
   "author": "Ofek Avrahami",
   "repository": {
     "type": "git",
